@@ -1,42 +1,40 @@
-import {
-    addContact,
-    getContactById,
-    listContacts,
-    removeContact,
-    rewriteContact,
-  } from "../services/contactsServices.js";
-import { createContactsSchema, updateContactsSchema } from "../schemas/contactsSchemas.js";
+import {Contact} from "../models/contacts.js";
 
+import { createContactsSchema, updateContactsSchema } from "../schemas/contactsSchemas.js";
 
 export async function getAllContacts (req, res, next) {
     try {
-        const allContacts = await listContacts();
+        const allContacts = await Contact.find();
         res.status(200).json(allContacts);
     } catch (error) {
         next(error);
     }
 }
-
-export async function getOneContact(req, res) {
+export async function getOneContact(req, res, next) {
         const {id} = req.params;
-        const oneContact = await getContactById(id);
-        if(oneContact) {
-            res.status(200).json(oneContact);
+        try{
+            const oneContact = await Contact.findById(id);
+            if(!oneContact) {
+                res.status(404).json({message: "Not found"});  
+            } 
+                res.status(200).json(oneContact);
+            } catch(error) {
+                next(error);
+        }     
+}
+export async function deleteContact(req, res, next) {
+    const {id} = req.params;
+    try {
+        const deletedContact = await Contact.findByIdAndDelete(id);
+        if(deletedContact) {
+            res.status(200).json(deletedContact);
         } else {
             res.status(404).json({message: "Not found"});
         }
+    } catch(error) {
+        next(error);
+    }   
 }
-
-export async function deleteContact(req, res) {
-    const {id} = req.params;
-    const deletedContact = await removeContact(id);
-    if(deletedContact) {
-        res.status(200).json(deletedContact);
-    } else {
-        res.status(404).json({message: "Not found"});
-    }
-}
-
 export async function createContact (req, res, next) {
     const {name, email, phone} = req.body;
 
@@ -46,15 +44,15 @@ export async function createContact (req, res, next) {
     }
 
     try {
-        const newContact = await addContact(name, email, phone);
+        const newContact = await Contact.create({name, email, phone});
         res.status(201).json(newContact);
     } catch (error) {
         next(error);
     }
 }
-
 export async function updateContact (req, res, next) {
     const {id} = req.params;
+
     const {name, email, phone} = req.body;
     const {error} = updateContactsSchema.validate({name, email, phone});
 
@@ -65,7 +63,21 @@ export async function updateContact (req, res, next) {
         return res.status(400).json({message: error.message});
     }
     try {
-        const result = await rewriteContact(id, req.body);
+        const result = await Contact.findByIdAndUpdate(id, req.body, {new: true});
+
+        if(!result) {
+            return res.status(404).json({message: "Not found"});
+        }
+        res.status(200).json(result);
+    } catch(error) {
+        next(error);
+    }
+}
+export async function updateStatusContact(req, res, next) {
+    const {id} = req.params;
+
+    try {
+        const result = await Contact.findByIdAndUpdate(id, req.body, {new: true});
         if(!result) {
             return res.status(404).json({message: "Not found"});
         }
