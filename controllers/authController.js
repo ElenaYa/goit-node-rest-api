@@ -65,7 +65,11 @@ export async function login(req, res, next) {
 
 export async function logout(req, res, next) {
     try {
-        await User.findByIdAndUpdate(req.user.id, {token: null});
+        const user = await User.findOneAndUpdate({_id: req.user.id}, {token: null});
+
+        if(!user) {
+            throw HttpError(401, "Not authirized");
+        }
 
         res.status(204).end();
     } catch(error){
@@ -73,14 +77,14 @@ export async function logout(req, res, next) {
     }
 }
 export async function userByToken(req, res, next) {
-    const {id} = req.user;
+
     try {
-        const currentUser = await User.findById(id);
+        const currentUser = await User.findById(req.user.id);
 
         if(!currentUser) {
             throw HttpError(401, "Not authorized");
         }
-        res.status(200).send(currentUser);
+        res.status(200).json({email: currentUser.email, subscription: currentUser.subscription});
     } catch(error) {
         next(error);
     }
