@@ -4,24 +4,31 @@ import morgan from "morgan";
 import cors from "cors";
 import mongoose from "mongoose";
 
+import middlewareAuth from "./helpers/middlewareAuth.js";
+
 import contactsRouter from "./routes/contactsRouter.js";
+import userRouter from "./routes/userRouter.js";
 
 const app = express();
 
 const DB_HOST = process.env.DB_HOST;
 
-mongoose.connect(DB_HOST, { autoIndex: false })
+async function run() {
+    mongoose.connect(DB_HOST, { autoIndex: false })
     .then(() => console.log("Database connection successful"))
     .catch((error) => {
         console.error(error);
         process.exit(1);
     });
+}
+run();
 
 app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/contacts", contactsRouter);
+app.use("/api/contacts", middlewareAuth, contactsRouter);
+app.use("/users", userRouter);
 
 app.use((_, res) => {
     res.status(404).json({message: "Route not found"});
