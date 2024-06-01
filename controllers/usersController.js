@@ -7,7 +7,7 @@ async function uploadAvatar(req, res, next) {
     try {
 
         if (!req.file) {
-            return res.status(400).send("Please select the avatar file");
+            return res.status(400).send({message: "Please select the avatar file"});
           }
 
        const userAvatar = await jimp.read(req.file.path);

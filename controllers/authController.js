@@ -20,7 +20,7 @@ export async function register(req, res, next) {
         const avatarURL = gravatar.url(email);
 
         const newUser = await User.create({email, password: passwordHash,
-        avatarURL: `http:${avatarURL}`,
+        avatarURL: `${avatarURL}`,
     });
 
         const {subscription} = newUser;
