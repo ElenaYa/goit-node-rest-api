@@ -4,6 +4,6 @@ import uploadFile from "../helpers/upload.js";
 
 const avatarRouter = express.Router();
 
-avatarRouter.patch("/avatars", uploadFile.single("avatarURL"), uploadAvatar);
+avatarRouter.patch("/avatars", uploadFile.single("avatar"), uploadAvatar);
 avatarRouter.get("/avatars", getAvatar);
 export default avatarRouter;
