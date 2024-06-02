@@ -50,12 +50,15 @@ export const updateAvatar = async (req, res, next) => {
     const { verificationToken } = req.params;
 
     try {
-      const user = await User.findOneAndUpdate({ verificationToken }, { verify: true, verificationToken: null })
+
+      const user = await User.findOne({verificationToken});
 
       if (!user) {
         throw HttpError(404, "User not found");
       }
-      
+
+      await User.findOneAndUpdate(user._id, { verify: true, verificationToken: null })
+
       res.status(200).json({message: "Verification successful"});
     } catch (error) {
       next(error);
