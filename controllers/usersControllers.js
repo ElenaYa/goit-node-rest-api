@@ -81,7 +81,7 @@ export const updateAvatar = async (req, res, next) => {
       await sendMail({
         to: email,
         from: process.env.EMAIL_SENDER,
-        subject: "Re-verification in Contact Kingdom",
+        subject: "Re-verification in Contacts list",
         html: `<h2 style="color: blue">Your re-verification <a href="http://localhost:3000/users/verify/${verificationToken}">link</a></h2>`,
         text: `Your re-verification link: http://localhost:3000/users/verify/${verificationToken}`,
       })

@@ -35,7 +35,7 @@ export const register = async (req, res, next) => {
     await sendMail({
       to: email,
       from: process.env.EMAIL_SENDER,
-      subject: "Welcome to Contact Kingdom!",
+      subject: "Welcome to Contacts list",
       html: `<h2 style="color: blue">Confirm your email address by following the <a href="http://localhost:3000/users/verify/${verificationToken}">link</a></h2>`,
       text: `Confirm your email address by open the link: http://localhost:3000/users/verify/${verificationToken}`,
     })
