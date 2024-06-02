@@ -1,8 +1,11 @@
 import {User} from "../models/users.js";
 import bcrypt from "bcrypt";
+import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import HttpError from "../helpers/HttpError.js";
 import gravatar from "gravatar";
+import mail from "../mail/mail.js";
+import "dotenv/config";
 
 export async function register(req, res, next) {
     const {email, password} = req.body;
@@ -19,13 +22,16 @@ export async function register(req, res, next) {
 
         const avatarURL = gravatar.url(email);
 
+        const verificationToken = crypto.randomUUID();
+
         const newUser = await User.create({email, password: passwordHash,
-        avatarURL: `${avatarURL}`,
+        avatarURL: `${avatarURL}`, verificationToken,
     });
+    const {subscription} = newUser;
 
-        const {subscription} = newUser;
-
-        res.status(201).json({user: {
+    await mail.sendMail(email);
+  
+     res.status(201).json({user: {
             email,
             subscription,
         },
@@ -36,9 +42,9 @@ export async function register(req, res, next) {
 }
 export async function login(req, res, next) {
 
-    const {email, password} = req.body;
-
     try {
+        const {email, password} = req.body;
+
         const user = await User.findOne({email});
 
         if(user === null) {
@@ -48,6 +54,10 @@ export async function login(req, res, next) {
 
         if (isMatch === false) {
             throw HttpError(401, "Email or password is wrong");
+        }
+
+        if (user.verify === false) {
+            throw HttpError(401, "Please verify your email");
         }
         const userInfo = {
             id: user._id,
@@ -73,7 +83,7 @@ export async function logout(req, res, next) {
         const user = await User.findOneAndUpdate({_id: req.user.id}, {token: null});
 
         if(!user) {
-            throw HttpError(401, "Not authirized");
+            throw HttpError(401, "Not authorized");
         }
 
         res.status(204).end();
